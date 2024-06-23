@@ -1,5 +1,5 @@
-
-#define _GNU_SOURCE // for getaddrinfo on linux
+#define _POSIX_C_SOURCE 200112L
+// posix standard with getaddrinfo
 
 #include <stdio.h>
 #include <sys/socket.h>
