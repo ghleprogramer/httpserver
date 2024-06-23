@@ -1,0 +1,4 @@
+/build/
+/httpserver.dSYM/
+.vscode
+.DS_Store
