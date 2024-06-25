@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 // #include <netinet/in.h>
  
-#define STR_PORT_NUMBER "3490"
+#define SERVICE "8080"
 
 int main(int argc, char **argv)
 {
@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 	hints.ai_flags = AI_PASSIVE;
 	hints.ai_socktype = SOCK_STREAM;
 	
-	int getaddrcheck = getaddrinfo(NULL, STR_PORT_NUMBER, &hints, &srv_info);
+	int getaddrcheck = getaddrinfo(NULL, SERVICE, &hints, &srv_info);
 	if (getaddrcheck != 0) {
 		fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(getaddrcheck));
 		return getaddrcheck;
@@ -43,9 +43,15 @@ int main(int argc, char **argv)
 	}
 	uint32_t buff;
 	
-	while (recv(clnt_fd, &buff, sizeof(buff), 0)) {
+	int bytes_recv;
+	do {
+		bytes_recv = recv(clnt_fd, &buff, sizeof(buff), 0);
+		if (bytes_recv == -1) {
+			fprintf(stderr, "recv error: %s\n", strerror(errno));
+			return errno;
+		}
 		fwrite(&buff, sizeof(buff), 1, f);
-	}
+	} while (bytes_recv);
 
 	freeaddrinfo(srv_info);
 	// printf("nofail\n");
