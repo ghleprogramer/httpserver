@@ -14,8 +14,10 @@ typedef struct sockaddr_in sockaddr_in;
 typedef struct sockaddr_in6 sockaddr_in6;
 
 #define LISTEN_QUEUE 10
-#define SERVICE "http" // "3490" "8080"
+#define FUNCSSERVICE "http" // "3490" "8080"
+// #define HTTP_OK "HTTP/1.1 200 OK\r\n\r\nPOG"
 #define NAME_MAX_LENGTH 50
+#define FUNCSHTTP_RECV_SIZE 512
 
 int create_sock_bind_send(char *filetosend)
 {
@@ -26,7 +28,7 @@ int create_sock_bind_send(char *filetosend)
 	hints.ai_flags = AI_PASSIVE;
 	hints.ai_socktype = SOCK_STREAM;
 	
-	int getaddrcheck = getaddrinfo(NULL, SERVICE, &hints, &srv_info);
+	int getaddrcheck = getaddrinfo(NULL, FUNCSSERVICE, &hints, &srv_info);
 	if (getaddrcheck != 0) {
 		fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(getaddrcheck));
 		return getaddrcheck;
@@ -68,8 +70,18 @@ int create_sock_bind_send(char *filetosend)
 	}
 
 	// nothing is done with this rn
-	uint32_t recvbuffer[255];
-	recv(clnt_fd, recvbuffer, sizeof(recvbuffer), 0);
+	uint32_t recvbuffer[FUNCSHTTP_RECV_SIZE];
+	memset(recvbuffer, 0, sizeof(recvbuffer));
+	if (recv(clnt_fd, recvbuffer, sizeof(recvbuffer), 0) == -1) {
+		fprintf(stderr, "send error: %s\n", strerror(errno));
+		return errno;
+	}
+	printf("%s\n", (char *)recvbuffer);
+
+	// if (send(clnt_fd, HTTP_OK, sizeof(HTTP_OK), 0) == -1) {
+	// 	fprintf(stderr, "send error: %s\n", strerror(errno));
+	// 	return errno;
+	// }
 
 	char ipstr[INET6_ADDRSTRLEN];
 	char hostname[NAME_MAX_LENGTH];
