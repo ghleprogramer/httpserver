@@ -111,8 +111,8 @@ int main(int argc, char **argv)
 		return errno;
 	}
 	close(msg_fd);
-
-	printf("sent file size:%i\n\n", (int)msg_stats.st_size);
+	
+	printf("sent file size:%li\n\n", msg_stats.st_size);
 
 	FILE *msg = fopen(argv[1], "rb");
 	if (msg == NULL) {
