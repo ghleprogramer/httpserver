@@ -18,6 +18,103 @@ typedef struct sockaddr_in6 sockaddr_in6;
 // #define HTTP_OK "HTTP/1.1 200 OK\r\n\r\nPOG"
 #define NAME_MAX_LENGTH 50
 #define FUNCSHTTP_RECV_SIZE 512
+#define SEND_BUFFER_SIZE 1000*10 // 10KB
+#define SERVICE "http" // "3490" "8080"
+
+int create_bind_stream_sock(int *srv_fd)
+{
+	struct addrinfo hints, *srv_info;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_flags = AI_PASSIVE;
+	hints.ai_socktype = SOCK_STREAM;
+	
+	int getaddrcheck = getaddrinfo(NULL, SERVICE, &hints, &srv_info);
+	if (getaddrcheck != 0) {
+		fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(getaddrcheck));
+		return getaddrcheck;
+	}
+
+	struct addrinfo *ptr = srv_info;
+	int reuseaddr_opt = 1;
+	while (ptr != NULL)
+	{
+		if ((*srv_fd = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol)) == -1) {
+			fprintf(stderr, "socket error: %s\n", strerror(errno));
+		} else if ((setsockopt(*srv_fd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr_opt, sizeof(reuseaddr_opt)))) {
+			fprintf(stderr, "setsockopt error: %s\n", strerror(errno));
+		} else if (bind(*srv_fd, ptr->ai_addr, ptr->ai_addrlen)) {
+			fprintf(stderr, "bind error: %s\n", strerror(errno));
+		} else {
+			printf("bind done\n\n");
+			break;
+		}
+		ptr = ptr->ai_next;
+	}
+	if (ptr == NULL) {
+		printf("bind failed\n");
+		return errno;
+	}
+	
+	freeaddrinfo(srv_info);
+	return 0;
+}
+
+int file_send_athome(char* filename, int clntsock)
+{
+	int msg_fd = open(filename, O_RDONLY);
+	if (msg_fd == -1) {
+		fprintf(stderr, "fstat error: %s\n", strerror(errno));
+		return errno;
+	}
+	struct stat msg_stats;
+	if (fstat(msg_fd, &msg_stats) == -1) {
+		fprintf(stderr, "fstat error: %s\n", strerror(errno));
+		return errno;
+	}
+	if (close(msg_fd)) {
+		fprintf(stderr, "close error: %s\n", strerror(errno));
+		return errno;
+	}
+	
+	printf("to be sent file size:%lli\n", msg_stats.st_size);
+
+	FILE *msg = fopen(filename, "rb");
+	if (msg == NULL) {
+		fprintf(stderr, "fopen error: %s\n", strerror(errno));
+		return errno;
+	}
+	
+	uint8_t buff[SEND_BUFFER_SIZE];
+	long bytes_read;
+	long bytes_sent;
+	while ((bytes_read = fread(buff, sizeof(buff[0]), sizeof(buff), msg))) {
+		if (ferror(msg)) {
+			fprintf(stderr, "fread error: %s\n", strerror(errno));
+			return errno;
+		}
+		bytes_sent = 0;
+		do
+		{
+			bytes_sent += send(clntsock, buff, bytes_read, 0);
+			if (bytes_sent == -1) {
+				fprintf(stderr, "send error: %s\n", strerror(errno));
+				return errno;
+			}
+		} while (bytes_sent < bytes_read);
+	}
+
+	printf("file sent :)\n\n");
+	if (fclose(msg)) {
+		fprintf(stderr, "close error: %s\n", strerror(errno));
+		return errno;
+	}
+	return 0;
+}
+
+/* the rest are older test/learning funcs */
+
+/*
 
 int create_sock_bind_send(char *filetosend)
 {
@@ -169,3 +266,5 @@ int printipaddrs(char* domain_name)
 	freeaddrinfo(serverinfo);
 	return 0;
 }
+
+*/
