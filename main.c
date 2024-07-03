@@ -18,13 +18,8 @@ int main(void)
 {
 	int srv_fd;
 	int create_srv_ckeck;
-	if ((create_srv_ckeck = create_bind_stream_sock(&srv_fd))) {
+	if ((create_srv_ckeck = sock_init(&srv_fd))) {
 		return create_srv_ckeck;
-	}
-
-	if (listen(srv_fd, LISTEN_QUEUE) == -1) {
-		fprintf(stderr, "listen error: %s\n", strerror(errno));
-		return errno;
 	}
 
 	int clnt_fd;

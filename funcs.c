@@ -15,7 +15,7 @@
 struct addrinfo hints, *srv_info, *ptr;
 int getaddrcheck;
 int reuseaddr_opt;
-int create_bind_stream_sock(int *srv_fd)
+int sock_init(int *srv_fd)
 {
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
@@ -47,8 +47,13 @@ int create_bind_stream_sock(int *srv_fd)
 		printf("bind failed\n");
 		return errno;
 	}
-	
 	freeaddrinfo(srv_info);
+
+	if (listen(*srv_fd, LISTEN_QUEUE) == -1) {
+		fprintf(stderr, "listen error: %s\n", strerror(errno));
+		return errno;
+	}
+
 	return 0;
 }
 
