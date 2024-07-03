@@ -1,5 +1,4 @@
-#define _POSIX_C_SOURCE 200112L
-// posix standard with getaddrinfo
+#include "defs.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -13,8 +12,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-#include "funcs.c"
-#include "defs.h"
+#include "funcs.h"
 
 int main(void)
 {
@@ -76,7 +74,7 @@ int main(void)
 			fprintf(stderr, "close error: %s\n", strerror(errno));
 			return errno;
 		}
-		printf("--------------- client served -----------------\n");
+		printf("\n--------------- client served -----------------\n");
 	}
 
 	if (close(srv_fd)) {

@@ -1,5 +1,6 @@
 /build/
 /httpserver.dSYM/
+/static/
 .vscode
 .DS_Store
 httpserver
