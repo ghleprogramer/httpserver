@@ -13,13 +13,7 @@
 typedef struct sockaddr_in sockaddr_in;
 typedef struct sockaddr_in6 sockaddr_in6;
 
-#define LISTEN_QUEUE 10
-#define FUNCSSERVICE "http" // "3490" "8080"
-// #define HTTP_OK "HTTP/1.1 200 OK\r\n\r\nPOG"
-#define NAME_MAX_LENGTH 50
-#define FUNCSHTTP_RECV_SIZE 512
-#define SEND_BUFFER_SIZE 1000*10 // 10KB
-#define SERVICE "http" // "3490" "8080"
+#include "defs.h"
 
 int create_bind_stream_sock(int *srv_fd)
 {
@@ -46,7 +40,7 @@ int create_bind_stream_sock(int *srv_fd)
 		} else if (bind(*srv_fd, ptr->ai_addr, ptr->ai_addrlen)) {
 			fprintf(stderr, "bind error: %s\n", strerror(errno));
 		} else {
-			printf("bind done\n\n");
+			printf("bind done\n");
 			break;
 		}
 		ptr = ptr->ai_next;
@@ -77,7 +71,7 @@ int file_send_athome(char* filename, int clntsock)
 		return errno;
 	}
 	
-	printf("to be sent file size:%lli\n", msg_stats.st_size);
+	printf("to be sent file size: %lli\n", msg_stats.st_size);
 
 	FILE *msg = fopen(filename, "rb");
 	if (msg == NULL) {
@@ -109,6 +103,53 @@ int file_send_athome(char* filename, int clntsock)
 		fprintf(stderr, "close error: %s\n", strerror(errno));
 		return errno;
 	}
+	return 0;
+}
+
+int request_prosses(char* request, char* file_name)
+{
+	if (request == NULL) {
+		fprintf(stderr, "request is NULL\n");
+		return 1;
+	}
+	if (strcmp(strtok(request, " "), "GET")) {
+		fprintf(stderr, "\n!!not a GET request!!\n");
+		return 1;
+	}
+
+	char* input = strtok(NULL, " ");
+	printf("\nget file: %s\n", input);
+
+	if (strcmp(input, "/") == 0) {
+		strcpy(file_name, "index.html");
+		return 0;
+	}
+
+	while (*input == '/') {
+		input += 1;
+	}
+	
+	strncpy(file_name, input, SEND_FILE_NAME_SIZE);
+	return 0;
+}
+
+char ipstr[INET6_ADDRSTRLEN];
+char hostname[NAME_MAX_LENGTH];
+char servicename[NAME_MAX_LENGTH];
+int print_clnt_info(struct sockaddr_storage* clnt_addr)
+{
+	const char* ntopcheck = inet_ntop(clnt_addr->ss_family, clnt_addr, ipstr, sizeof(ipstr));
+	if (ntopcheck == NULL) {
+		fprintf(stderr, "inet_ntop error: %s\n", strerror(errno));
+		return errno;
+	}
+	int getnameinfocheck = getnameinfo((struct sockaddr *)clnt_addr, sizeof(*clnt_addr)
+		,hostname, NAME_MAX_LENGTH, servicename, NAME_MAX_LENGTH, 0);
+	if (getnameinfocheck) {
+		fprintf(stderr, "getnameinfo error: %s\n", gai_strerror(getnameinfocheck));
+		return getnameinfocheck;
+	}
+	printf("ip: %s\nhost name: %s\nservice name: %s\nConnected\n", ipstr, hostname, servicename);
 	return 0;
 }
 
