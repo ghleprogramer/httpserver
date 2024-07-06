@@ -127,7 +127,7 @@ int request_prosses(char* request, char* file_name)
 	printf("\nget file: %s\n", input);
 
 	if (strcmp(input, "/") == 0) {
-		strcpy(file_name, "index.html");
+		strncpy(file_name, "index.html", SEND_FILE_NAME_SIZE);
 		return 0;
 	}
 
