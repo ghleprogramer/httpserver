@@ -31,20 +31,31 @@ int main(void)
 		clnt_fd = accept(srv_fd, (struct sockaddr *)&clnt_addr, &clnt_addr_len);
 		if (clnt_fd == -1) {
 			fprintf(stderr, "accept error: %s\n", strerror(errno));
-			return errno;
+			if (close(clnt_fd)) {
+				fprintf(stderr, "close error: %s\n", strerror(errno));
+				return errno;
+			}
+			continue;
 		}
 		printf("\n--------------- client accepted -----------------\n");
-
 
 		memset(recvbuffer, 0, sizeof(recvbuffer));
 		if (recv(clnt_fd, recvbuffer, sizeof(recvbuffer), 0) == -1) {
 			fprintf(stderr, "recv error: %s\n", strerror(errno));
-			return errno;
+			if (close(clnt_fd)) {
+				fprintf(stderr, "close error: %s\n", strerror(errno));
+				return errno;
+			}
+			continue;
 		}
 		printf("\n%s", (char *)recvbuffer);
 
 		if (print_clnt_info(&clnt_addr)) {
-			return errno;
+			if (close(clnt_fd)) {
+				fprintf(stderr, "close error: %s\n", strerror(errno));
+				return errno;
+			}
+			continue;
 		}
 
 		if (request_prosses((char*)recvbuffer, file_name)) {
@@ -56,8 +67,7 @@ int main(void)
 		}
 		printf("out file name: %s\n", file_name);
 
-		int sendcheck;
-		if ((sendcheck = file_send_athome(file_name, clnt_fd))) {
+		if (file_send_athome(file_name, clnt_fd)) {
 			if (close(clnt_fd)) {
 				fprintf(stderr, "close error: %s\n", strerror(errno));
 				return errno;
