@@ -27,6 +27,7 @@ int main(void)
 	socklen_t clnt_addr_len = sizeof(clnt_addr);
 	uint8_t recvbuffer[HTTP_REQUEST_SIZE];
 	char file_name[SEND_FILE_NAME_SIZE];
+	
 	while (1) {		
 		clnt_fd = accept(srv_fd, (struct sockaddr *)&clnt_addr, &clnt_addr_len);
 		if (clnt_fd == -1) {
@@ -38,15 +39,13 @@ int main(void)
 			continue;
 		}
 		printf("\n--------------- client accepted -----------------\n");
-
-		memset(recvbuffer, 0, sizeof(recvbuffer));
-		if (recv(clnt_fd, recvbuffer, sizeof(recvbuffer), 0) == -1) {
-			fprintf(stderr, "recv error: %s\n", strerror(errno));
+		
+		if (recv_athome(clnt_fd, recvbuffer, sizeof(recvbuffer))) {
 			if (close(clnt_fd)) {
 				fprintf(stderr, "close error: %s\n", strerror(errno));
 				return errno;
 			}
-			continue;
+			continue;			
 		}
 		printf("\n%s", (char *)recvbuffer);
 

@@ -12,6 +12,21 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
+long bytes_recv;
+int recv_athome(int clnt_fd,uint8_t *recvbuff, int recvbuff_size)
+{
+	memset(recvbuff, 0, recvbuff_size);
+	if ((bytes_recv = recv(clnt_fd, recvbuff, recvbuff_size, 0)) == -1) {
+		fprintf(stderr, "recv error: %s\n", strerror(errno));
+		return errno;
+	}
+	if (!bytes_recv) {
+		printf("client socket closed\n");
+		return 1;
+	}
+	return 0;
+}
+
 struct addrinfo hints, *srv_info, *ptr;
 int getaddrcheck;
 int reuseaddr_opt;
