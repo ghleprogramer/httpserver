@@ -10,5 +10,6 @@
 #define SEND_BUFFER_SIZE 1000*10 // 10KB
 #define SEND_FILE_NAME_SIZE 100
 #define REUSE_SOCK_ADDR 1
+#define STATIC_STR_LEN 7
 
 #endif

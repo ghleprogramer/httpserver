@@ -140,17 +140,16 @@ int request_prosses(char* request, char* file_name)
 
 	input = strtok(NULL, " ");
 	printf("\nget file: %s\n", input);
-
+	strncpy(file_name, "static/", SEND_FILE_NAME_SIZE);
 	if (strcmp(input, "/") == 0) {
-		strncpy(file_name, "index.html", SEND_FILE_NAME_SIZE);
+		strncat(file_name, "index.html", SEND_FILE_NAME_SIZE);
 		return 0;
 	}
 
 	while (*input == '/') {
 		input += 1;
 	}
-	
-	strncpy(file_name, input, SEND_FILE_NAME_SIZE);
+	strncat(file_name, input, SEND_FILE_NAME_SIZE - STATIC_STR_LEN - 1);
 	return 0;
 }
 

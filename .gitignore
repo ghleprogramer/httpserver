@@ -1,7 +1,8 @@
 /build/
 /httpserver.dSYM/
-/static/
+static/*
 .vscode
 .DS_Store
 httpserver
-beej*
+!index.html
+!favicon.ico
