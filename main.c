@@ -2,7 +2,9 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 #include <stdint.h>
+#include <unistd.h>
 #include <sys/socket.h>
 
 #include "funcs.h"
