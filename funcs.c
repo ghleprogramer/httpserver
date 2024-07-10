@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <ctype.h>
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -78,6 +79,8 @@ FILE *msg;
 uint8_t buff[SEND_BUFFER_SIZE];
 long bytes_read;
 long bytes_sent;
+char* file_type;
+char content_type[MAX_CONTENT_TYPE];
 int file_send_athome(char* filename, int clntsock)
 {
 	msg_fd = open(filename, O_RDONLY);
@@ -102,6 +105,28 @@ int file_send_athome(char* filename, int clntsock)
 		return errno;
 	}
 	
+	strtok(filename, ".");
+	file_type = strtok(NULL, "");
+	printf("%s ", file_type);
+	if (!strcmp(file_type, "html")) {
+		strncpy(content_type, CONTENT_HTML, MAX_CONTENT_TYPE);
+	} else if (!strcmp(file_type, "mp4")) {
+		strncpy(content_type, CONTENT_MP4, MAX_CONTENT_TYPE);
+	} else {
+		strncpy(content_type, CONTENT_ICO, MAX_CONTENT_TYPE);
+	}
+	content_type[MAX_CONTENT_TYPE - 1] = '\0';
+
+	if (send(clntsock, HTTP_OK, sizeof(HTTP_OK) - 1, 0) == -1) {
+		fprintf(stderr, "send error: %s\n", strerror(errno));
+		return errno;
+	}
+
+	if (send(clntsock, content_type, strlen(content_type), 0) == -1) {
+		fprintf(stderr, "send error: %s\n", strerror(errno));
+		return errno;
+	}
+
 	while ((bytes_read = fread(buff, sizeof(buff[0]), sizeof(buff), msg))) {
 		if (ferror(msg)) {
 			fprintf(stderr, "fread error: %s\n", strerror(errno));

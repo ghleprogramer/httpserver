@@ -1,3 +1,5 @@
+// cc main.c -Werror -Wextra -o httpserver funcs.c
+
 #include "defs.h"
 
 #include <stdio.h>
